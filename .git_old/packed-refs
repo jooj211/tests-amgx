@@ -1,0 +1,16 @@
+# pack-refs with: peeled fully-peeled sorted 
+919b1f7be713817011b0b44c2109d7049347bf7e refs/remotes/origin/issue-templates
+5b54ec3b48c76c7c58c5da1225c85e08efea19cf refs/remotes/origin/issue-templates-bug
+d2344958f43c103893c4400fe8ad42d02ac773f5 refs/remotes/origin/main
+77f91a94c05edbf58349bad447bbface7207c2b4 refs/remotes/origin/v2.1.x
+77f91a94c05edbf58349bad447bbface7207c2b4 refs/remotes/origin/v2.2.x
+ebb934ef355f33ebf7b0f2522e72719bc8ab4d90 refs/tags/v2.0.0
+^6af2390f19725faeae4f9bd459c9c151970f2b4e
+ec85ae6137c333fc4f15fd265025ff80431484f4 refs/tags/v2.0.1
+^602560345c297617568e3cc545097b6b84f673f7
+7e5d9314a4d98451be947595ab57ffa1a394f9ff refs/tags/v2.1.0
+^cf285c118726f5d1e8eb740d4936dd0bdaaf9b48
+8f4632d6ddb7237677ba051655a7dd00f901ab31 refs/tags/v2.2.0
+^861ba5a8d97a24b5b6f156d3cc6829e0b1c94243
+dad24cdede0aedeea6b1fff98d5e18fda972af5b refs/tags/v2.3.0
+^32e1f44fa93af7859490a800f137e75b6513420c

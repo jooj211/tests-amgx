@@ -23,7 +23,7 @@ void gerarMatrizS(double stepSize)
     double beta = 2.0;
 
     int numeroPontos = ((b - a) / stepSize) + 1;
-    //cout << "numeroPontos: " << numeroPontos << endl;
+    cout << "numeroPontos: " << numeroPontos << endl;
 
     /*
         numeroPontos = 9 são 7 valores + 2 valores de contorno
@@ -33,14 +33,14 @@ void gerarMatrizS(double stepSize)
     int n = numeroPontos - 2;
 
     // double stepSize = (b - a) / (numeroPontos - 1); // valor de cada incremento, 9 pontos mas 8 intervalos
-    //cout << "n: " << n << endl;
-    //cout << "STEP SIZE: " << stepSize << endl;
+    cout << "n: " << n << endl;
+    cout << "STEP SIZE: " << stepSize << endl;
 
     double h = stepSize * stepSize;
-    //cout << "h: " << h << endl;
+    cout << "h: " << h << endl;
 
     int nnz = 3 * n - 2; // elementos não-nulos - n+(n-1)+(n-1) = 3n-2
-    //cout << "NNZ: " << nnz << endl;
+    cout << "NNZ: " << nnz << endl;
     int countI = 1, countF = 3;
 
     ofstream arquivoMtx;
@@ -74,7 +74,7 @@ void gerarMatrizS(double stepSize)
     arquivoMtx << n << " " << n << " " << 2.0 << endl;
 
     double vd = -h * 2.0 + alfa;
-    //cout << "RHS: " << vd << endl;
+    cout << "RHS: " << vd << endl;
 
     arquivoMtx << vd << endl;
     for (int i = 0; i < n - 2; i++)
@@ -94,7 +94,7 @@ void gerarMatrizN(double numeroPontos)
     double alfa = 2.0;
     double beta = 2.0;
 
-    //cout << "numeroPontos: " << numeroPontos << endl;
+    cout << "numeroPontos: " << numeroPontos << endl;
 
     /*
         numeroPontos = 9 são 7 valores + 2 valores de contorno
@@ -104,14 +104,14 @@ void gerarMatrizN(double numeroPontos)
     int n = numeroPontos - 2;
 
     double stepSize = (b - a) / (numeroPontos - 1); // valor de cada incremento, 9 pontos mas 8 intervalos
-    //cout << "n: " << n << endl;
-    //cout << "STEP SIZE: " << stepSize << endl;
+    cout << "n: " << n << endl;
+    cout << "STEP SIZE: " << stepSize << endl;
 
     double h = stepSize * stepSize;
-    //cout << "h: " << h << endl;
+    cout << "h: " << h << endl;
 
     int nnz = 3 * n - 2; // elementos não-nulos - n+(n-1)+(n-1) = 3n-2
-    //cout << "NNZ: " << nnz << endl;
+    cout << "NNZ: " << nnz << endl;
     int countI = 1, countF = 3;
 
     ofstream arquivoMtx;
@@ -145,7 +145,7 @@ void gerarMatrizN(double numeroPontos)
     arquivoMtx << n << " " << n << " " << 2.0 << endl;
 
     double vd = -h * 2.0 + alfa;
-    //cout << "RHS: " << vd << endl;
+    cout << "RHS: " << vd << endl;
 
     arquivoMtx << vd << endl;
     for (int i = 0; i < n - 2; i++)
@@ -157,16 +157,60 @@ void gerarMatrizN(double numeroPontos)
     arquivoMtx.close();
 }
 
-void calcular(const char **argv, double stepSize)
+
+int main(int argc, const char **argv)
 {
-    //cout << "Arquivo matrix: " << argv[2] << endl;
-    //cout << "Config: " << argv[4] << endl;
-   
-    //cout << "STEP SIZE: " << stepSize << endl;
-    gerarMatrizS(stepSize);
+    /*
+        para rodar, de dentro da pasta build: make -j16 all && examples/meu_teste -m ../examples/matrix.mtx -c ../src/configs/FGMRES_AGGREGATION.json
+    */
+
+    /*
+     g++ gerarMatriz.cpp  -o gerarMtx && ./gerarMtx 9 && rm gerarMtx && make -j16 all && examples/meu_teste2 -m ../examples/matrix3.mtx -c ../src/configs/FGMRES_AGGREGATION.json
+     g++ ../examples/gerarMatriz.cpp  -o gerarMtx && ./gerarMtx 1000 && rm gerarMtx && make -j16 all && examples/meu_teste2 -m ../examples/matrix3.mtx -c ../src/configs/FGMRES_AGGREGATION.json
+     make -j16 all && examples/meu_teste2 -m ../examples/matrix3.mtx -c ../src/configs/FGMRES_AGGREGATION.json -n 9
+     
+     make -j16 all && examples/meu_teste2 -m ../examples/matrix3.mtx -c ../src/configs/FGMRES_AGGREGATION.json -s 0.025
+     make -j16 all && examples/meu_teste2 -m ../examples/matrix3.mtx -c ../src/configs/FGMRES_AGGREGATION.json -n 9
+     */
+
+    /*
+        TODO:
+            0.0000002
+            Rodar na imune aumentando o step (0.25, 0.025,...) e anotar tempo,numero iterações, numero de pontos,step erros, L2 e outras info relevantes
+            Plotar grafico L2
+    */
+    /*
+        matriz formato CSR
+        pegar matriz já resolvida anteriormente e comparar resultados, primeiro sem RHS (tudo com 1)
+        depois com RHS ()
+
+        https://www.bu.edu/pasi/files/2011/07/Lecture7.pdf
+        https://github.com/cusplibrary/cusplibrary/blob/develop/examples/MatrixFormats/coo.cu
+        https://stackoverflow.com/questions/14097004/convert-a-matrix-a-in-a-sparse-formats-csr-coo-etc
+
+    */
+
+    cout << "Arquivo matrix: " << argv[2] << endl;
+    cout << "Config: " << argv[4] << endl;
+    int numeroPontos;
+    double stepSize;
+    istringstream ss(argv[6]);
+    if (std::string(argv[5]) == "-n")
+    {
+        ss >> numeroPontos;
+        cout << "Número Pontos: " << numeroPontos << endl;
+        gerarMatrizN(numeroPontos);
+    }
+    else if (std::string(argv[5]) == "-s")
+    {
+        ss >> stepSize;
+        cout << "Step Size: " << stepSize << endl;
+        gerarMatrizS(stepSize);
+    }
 
     AMGX_initialize();
-    
+    // AMGX_initialize_plugins();//The AMGX_initialize_plugins API call is deprecated and can be safely removed.
+
     // All of the objects are initialized using a default Resources.
     AMGX_matrix_handle matrix;
     AMGX_vector_handle rhs;
@@ -207,41 +251,41 @@ void calcular(const char **argv, double stepSize)
     int sol_size, sol_bsize;
     AMGX_vector_get_size(soln, &sol_size, &sol_bsize);
 
-    ofstream plotSol;
+    
 
-    plotSol.open("plotSol.csv");
     for (int i = 0; i < sol_size; ++i)
     {
-        //printf("%f \n",data[i]);
-        plotSol << data[i]<<endl;
+        printf("%f \n",data[i]);
     }
-    plotSol.close();
 
-    //cout << "Solução: " << sol_size << endl;
-    //cout << "Solução b_size: " << sol_bsize << endl;
+    cout << "Solução: " << sol_size << endl;
+    cout << "Solução b_size: " << sol_bsize << endl;
 
+    
     // descobrir o stepSize
     double a = -1, b = 1; // intervalo
+
+    cout << "STEP SIZE: " << stepSize << endl;
 
     double step = a;
     double valorExato;
     double EA;
 
-    // cout << "STEP"
-    //      << "\t\t"
-    //      << "V. EXATO"
-    //      << "\t"
-    //      << "V. APROX"
-    //      << "\t"
-    //      << "EA"
-    //      << "\t"
-    //      << "EA²"
-    //      << "\t\t" << endl;
+    cout << "STEP"
+         << "\t\t"
+         << "V. EXATO"
+         << "\t"
+         << "V. APROX"
+         << "\t"
+         << "EA"
+         << "\t"
+         << "EA²"
+         << "\t\t" << endl;
 
     //o arquivo erroAbsoluto contém o erro absoluto para cada ponto da discretização
     //normaL2 contém o erro para cada step
     ofstream erroAbsoluto, normaL2;
-    normaL2 <<fixed<< scientific << setprecision(15);
+
     erroAbsoluto.open("erroAbsoluto.csv");
     erroAbsoluto << "x,valor exato,valor aproximado, EA,EA²" << endl;
     erroAbsoluto << "-1,2,2,0,0" << endl;
@@ -259,15 +303,14 @@ void calcular(const char **argv, double stepSize)
 
     somaEA = somaEA * stepSize; // pela fórmula do slide tenho que multiplicar pelo h
     somaEA = sqrt(somaEA);
-    //cout << "RAIZ ER²: " << somaEA << endl;
+    cout << "RAIZ ER²: " << somaEA << endl;
 
     erroAbsoluto << "1,2,2,0,0" << endl;
     erroAbsoluto.close();
 
     // plotar o grafico do logaritmo da norma l2
     normaL2.open("normaL2.csv", ios_base::app);//ios_base::app para add no final
-    // normaL2 << sol_size << "," << stepSize << "," << sqrt(somaEA) << endl;
-    normaL2 << stepSize << "," << somaEA << endl;
+    normaL2 << sol_size << "," << sqrt(somaEA) << endl;
     normaL2.close();
     
 
@@ -280,85 +323,7 @@ void calcular(const char **argv, double stepSize)
     AMGX_SAFE_CALL(AMGX_config_destroy(config));
     AMGX_SAFE_CALL(AMGX_finalize());
 
-    delete [] data;
-}
-
-int main(int argc, const char **argv)
-{
-    /*
-        para rodar, de dentro da pasta build: make -j16 all && examples/meu_teste -m ../examples/matrix.mtx -c ../src/configs/FGMRES_AGGREGATION.json
-    */
-
-    /*
-     g++ gerarMatriz.cpp  -o gerarMtx && ./gerarMtx 9 && rm gerarMtx && make -j16 all && examples/meu_teste2 -m ../examples/matrix3.mtx -c ../src/configs/FGMRES_AGGREGATION.json
-     g++ ../examples/gerarMatriz.cpp  -o gerarMtx && ./gerarMtx 1000 && rm gerarMtx && make -j16 all && examples/meu_teste2 -m ../examples/matrix3.mtx -c ../src/configs/FGMRES_AGGREGATION.json
-     make -j16 all && examples/meu_teste2 -m ../examples/matrix3.mtx -c ../src/configs/FGMRES_AGGREGATION.json -n 9
-     
-     make -j16 all && examples/meu_teste2 -m ../examples/matrix3.mtx -c ../src/configs/FGMRES_AGGREGATION.json -s 0.025
-     make -j16 all && examples/meu_teste2 -m ../examples/matrix3.mtx -c ../src/configs/FGMRES_AGGREGATION.json -n 9
-     */
-
-    /*
-        TODO:
-            0.0000002
-            Rodar na imune aumentando o step (0.25, 0.025,...) e anotar tempo,numero iterações, numero de pontos,step erros, L2 e outras info relevantes
-            Plotar grafico L2
-    */
-    /*
-        matriz formato CSR
-        pegar matriz já resolvida anteriormente e comparar resultados, primeiro sem RHS (tudo com 1)
-        depois com RHS ()
-
-        https://www.bu.edu/pasi/files/2011/07/Lecture7.pdf
-        https://github.com/cusplibrary/cusplibrary/blob/develop/examples/MatrixFormats/coo.cu
-        https://stackoverflow.com/questions/14097004/convert-a-matrix-a-in-a-sparse-formats-csr-coo-etc
-
-    */
-
-    /*
-        Rodar os GMRES e FGMRES
-        - numero de iteração
-        - tempo de solução
-        - residuo final
-        - plotar o grafio da solução
-        - gerador de matriz problema poisson/elasticidade
-        - criar o vetor na memoria sem usar arquivo 
-    */
-
-    //cout << "Arquivo matrix: " << argv[2] << endl;
-    //cout << "Config: " << argv[4] << endl;
-    int numeroPontos;
-    double stepSize;
-    istringstream ss(argv[6]);
-    if (std::string(argv[5]) == "-n")
-    {
-        ss >> numeroPontos;
-        //cout << "Número Pontos: " << numeroPontos << endl;
-        //gerarMatrizN(numeroPontos);
-    }
-    else if (std::string(argv[5]) == "-s")
-    {
-        ss >> stepSize;
-        //cout << "Step Size: " << stepSize << endl;
-        //gerarMatrizS(stepSize);
-    }
-
-    ofstream normaL2;
-    normaL2.open("normaL2.csv");
-    normaL2<<"stepSize"<<","<<"l2_error"<<endl;
-    normaL2.close();
-
-    // for (int i = 10; i >= 0; i--)
-    // {
-    //     calcular(argv, stepSize);
-    //     stepSize = stepSize / 2.0;
-    // }
-
-    stepSize = 1e-6;
-    calcular(argv, stepSize);
-    stepSize = stepSize / 2.0;
-
-    system("python ../examples/plot.py");
-
+    // AMGX_finalize_plugins();
+    // AMGX_finalize();
     return 0;
 }

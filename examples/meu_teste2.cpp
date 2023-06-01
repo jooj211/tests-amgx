@@ -23,7 +23,7 @@ void gerarMatrizS(double stepSize)
     double beta = 2.0;
 
     int numeroPontos = ((b - a) / stepSize) + 1;
-    //cout << "numeroPontos: " << numeroPontos << endl;
+    cout << "numeroPontos: " << numeroPontos << endl;
 
     /*
         numeroPontos = 9 são 7 valores + 2 valores de contorno
@@ -210,11 +210,13 @@ void calcular(const char **argv, double stepSize)
     ofstream plotSol;
 
     plotSol.open("plotSol.csv");
+    plotSol << 2 <<endl;
     for (int i = 0; i < sol_size; ++i)
     {
         //printf("%f \n",data[i]);
         plotSol << data[i]<<endl;
     }
+    plotSol << 2 <<endl;
     plotSol.close();
 
     //cout << "Solução: " << sol_size << endl;
@@ -354,11 +356,11 @@ int main(int argc, const char **argv)
     //     stepSize = stepSize / 2.0;
     // }
 
-    stepSize = 1e-6;
+    //stepSize = 1e-6;
     calcular(argv, stepSize);
     stepSize = stepSize / 2.0;
 
-    system("python ../examples/plot.py");
+    system("python ../examples/plotSol.py");
 
     return 0;
 }

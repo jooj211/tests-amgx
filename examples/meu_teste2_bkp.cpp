@@ -46,7 +46,7 @@ void gerarMatrizS(double stepSize)
     ofstream arquivoMtx;
 
     arquivoMtx.open("../examples/matrix3.mtx");
-    arquivoMtx <<fixed<< scientific << setprecision(15);
+    arquivoMtx << fixed << scientific << setprecision(15);
     arquivoMtx << "%%MatrixMarket matrix coordinate real general symmetric" << endl;
     arquivoMtx << "%%AMGX 1 1 sorted rhs" << endl;
     arquivoMtx << n << " " << n << " " << nnz << endl;
@@ -157,39 +157,8 @@ void gerarMatrizN(double numeroPontos)
     arquivoMtx.close();
 }
 
-
-int main(int argc, const char **argv)
+void solve_system(const char **argv)
 {
-    /*
-        para rodar, de dentro da pasta build: make -j16 all && examples/meu_teste -m ../examples/matrix.mtx -c ../src/configs/FGMRES_AGGREGATION.json
-    */
-
-    /*
-     g++ gerarMatriz.cpp  -o gerarMtx && ./gerarMtx 9 && rm gerarMtx && make -j16 all && examples/meu_teste2 -m ../examples/matrix3.mtx -c ../src/configs/FGMRES_AGGREGATION.json
-     g++ ../examples/gerarMatriz.cpp  -o gerarMtx && ./gerarMtx 1000 && rm gerarMtx && make -j16 all && examples/meu_teste2 -m ../examples/matrix3.mtx -c ../src/configs/FGMRES_AGGREGATION.json
-     make -j16 all && examples/meu_teste2 -m ../examples/matrix3.mtx -c ../src/configs/FGMRES_AGGREGATION.json -n 9
-     
-     make -j16 all && examples/meu_teste2 -m ../examples/matrix3.mtx -c ../src/configs/FGMRES_AGGREGATION.json -s 0.025
-     make -j16 all && examples/meu_teste2 -m ../examples/matrix3.mtx -c ../src/configs/FGMRES_AGGREGATION.json -n 9
-     */
-
-    /*
-        TODO:
-            0.0000002
-            Rodar na imune aumentando o step (0.25, 0.025,...) e anotar tempo,numero iterações, numero de pontos,step erros, L2 e outras info relevantes
-            Plotar grafico L2
-    */
-    /*
-        matriz formato CSR
-        pegar matriz já resolvida anteriormente e comparar resultados, primeiro sem RHS (tudo com 1)
-        depois com RHS ()
-
-        https://www.bu.edu/pasi/files/2011/07/Lecture7.pdf
-        https://github.com/cusplibrary/cusplibrary/blob/develop/examples/MatrixFormats/coo.cu
-        https://stackoverflow.com/questions/14097004/convert-a-matrix-a-in-a-sparse-formats-csr-coo-etc
-
-    */
-
     cout << "Arquivo matrix: " << argv[2] << endl;
     cout << "Config: " << argv[4] << endl;
     int numeroPontos;
@@ -227,7 +196,7 @@ int main(int argc, const char **argv)
     AMGX_vector_create(&rhs, rsrc, AMGX_mode_dDDI);
     AMGX_vector_create(&soln, rsrc, AMGX_mode_dDDI);
 
-    double *data = new double[100000000];
+    double *data = new double[100000000]; // This is where the matrix data will be stored
 
     /*
         1 d -> the first letter h or d specifies whether the matrix data (and subsequent linear solver algorithms) will run on the host or device
@@ -241,7 +210,7 @@ int main(int argc, const char **argv)
     //  If these are not specified than rhs=[1,...,1]^T and (initial guess) sol=[0,...,0]^T.
     AMGX_read_system(matrix, rhs, soln, argv[2]);
 
-    //AMGX_write_system(matrix, rhs, soln, "./output.system.mtx");
+    // AMGX_write_system(matrix, rhs, soln, "./output.system.mtx");
     AMGX_solver_setup(solver, matrix);
 
     AMGX_solver_solve_with_0_initial_guess(solver, rhs, soln);
@@ -251,17 +220,14 @@ int main(int argc, const char **argv)
     int sol_size, sol_bsize;
     AMGX_vector_get_size(soln, &sol_size, &sol_bsize);
 
-    
-
     for (int i = 0; i < sol_size; ++i)
     {
-        printf("%f \n",data[i]);
+        printf("%f \n", data[i]);
     }
 
     cout << "Solução: " << sol_size << endl;
     cout << "Solução b_size: " << sol_bsize << endl;
 
-    
     // descobrir o stepSize
     double a = -1, b = 1; // intervalo
 
@@ -282,21 +248,21 @@ int main(int argc, const char **argv)
          << "EA²"
          << "\t\t" << endl;
 
-    //o arquivo erroAbsoluto contém o erro absoluto para cada ponto da discretização
-    //normaL2 contém o erro para cada step
+    // o arquivo erroAbsoluto contém o erro absoluto para cada ponto da discretização
+    // normaL2 contém o erro para cada step
     ofstream erroAbsoluto, normaL2;
 
     erroAbsoluto.open("erroAbsoluto.csv");
     erroAbsoluto << "x,valor exato,valor aproximado, EA,EA²" << endl;
     erroAbsoluto << "-1,2,2,0,0" << endl;
-    
-    double somaEA = 0; // soma dos quadrado do erro absoluto
+
+    double somaEA = 0; // soma dos quadrados do erro absoluto
     for (int i = 0; i < sol_size; ++i)
     {
         step += stepSize;
         valorExato = (1 + step * step); // u = 1+x²
-        EA = data[i] - valorExato; // aproximado - exato
-        somaEA += (EA*EA); //soma dos erros absolutos²
+        EA = data[i] - valorExato;      // aproximado - exato
+        somaEA += (EA * EA);            // soma dos erros absolutos²
 
         erroAbsoluto << step << "," << valorExato << "," << data[i] << "," << EA << "," << EA * EA << endl;
     }
@@ -308,11 +274,10 @@ int main(int argc, const char **argv)
     erroAbsoluto << "1,2,2,0,0" << endl;
     erroAbsoluto.close();
 
-    // plotar o grafico do logaritmo da norma l2
-    normaL2.open("normaL2.csv", ios_base::app);//ios_base::app para add no final
+    // para plotar o grafico do logaritmo da norma l2
+    normaL2.open("normaL2.csv", ios_base::app); // ios_base::app para add no final
     normaL2 << sol_size << "," << sqrt(somaEA) << endl;
     normaL2.close();
-    
 
     AMGX_solver_destroy(solver);
     AMGX_vector_destroy(soln);
@@ -325,5 +290,42 @@ int main(int argc, const char **argv)
 
     // AMGX_finalize_plugins();
     // AMGX_finalize();
+}
+
+int main(int argc, const char **argv)
+{
+    /*
+        para rodar, de dentro da pasta build: make -j16 all && examples/meu_teste -m ../examples/matrix.mtx -c ../src/configs/FGMRES_AGGREGATION.json
+    */
+
+    /*
+     g++ gerarMatriz.cpp  -o gerarMtx && ./gerarMtx 9 && rm gerarMtx && make -j16 all && examples/meu_teste2 -m ../examples/matrix3.mtx -c ../src/configs/FGMRES_AGGREGATION.json
+     g++ ../examples/gerarMatriz.cpp  -o gerarMtx && ./gerarMtx 1000 && rm gerarMtx && make -j16 all && examples/meu_teste2 -m ../examples/matrix3.mtx -c ../src/configs/FGMRES_AGGREGATION.json
+     make -j16 all && examples/meu_teste2 -m ../examples/matrix3.mtx -c ../src/configs/FGMRES_AGGREGATION.json -n 9
+
+     make -j16 all && examples/meu_teste2 -m ../examples/matrix3.mtx -c ../src/configs/FGMRES_AGGREGATION.json -s 0.025
+     make -j16 all && examples/meu_teste2 -m ../examples/matrix3.mtx -c ../src/configs/FGMRES_AGGREGATION.json -n 9
+     */
+
+    /*
+        TODO:
+            0.0000002
+            Rodar na imune aumentando o step (0.25, 0.025,...) e anotar tempo,numero iterações, numero de pontos,step erros, L2 e outras info relevantes
+            Plotar grafico L2
+    */
+    /*
+        matriz formato CSR
+        pegar matriz já resolvida anteriormente e comparar resultados, primeiro sem RHS (tudo com 1)
+        depois com RHS ()
+
+        https://www.bu.edu/pasi/files/2011/07/Lecture7.pdf
+        https://github.com/cusplibrary/cusplibrary/blob/develop/examples/MatrixFormats/coo.cu
+        https://stackoverflow.com/questions/14097004/convert-a-matrix-a-in-a-sparse-formats-csr-coo-etc
+
+    */
+
+    solve_system(argv);
+    system("python plotSol.py");
+
     return 0;
 }

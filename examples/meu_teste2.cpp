@@ -288,7 +288,7 @@ void calcular(const char **argv, double stepSize)
 int main(int argc, const char **argv)
 {
     /*
-        para rodar, de dentro da pasta build: make -j16 all && examples/meu_teste -m ../examples/matrix.mtx -c ../src/configs/FGMRES_AGGREGATION.json
+        para rodar, de dentro da pasta build: make -j16 all && examples/meu_teste2 -m ../examples/matrix.mtx -c ../src/configs/FGMRES_AGGREGATION.json
     */
 
     /*
